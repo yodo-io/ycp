@@ -7,7 +7,7 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
-	db := initDB(false)
+	db := MustInitTestDB(false)
 	defer db.Close()
 
 	user := User{Email: "john@acme.org", Password: "t0ps3cr3t", Role: RoleUser}
@@ -16,18 +16,18 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	var res User
-	if err := db.First(&res, user.Model.ID).Error; err != nil {
+	if err := db.First(&res, user.ID).Error; err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotZero(t, user.Model.ID)
-	assert.Equal(t, res.Model.ID, user.Model.ID)
+	assert.NotZero(t, user.ID)
+	assert.Equal(t, res.ID, user.ID)
 	assert.Equal(t, res.Email, user.Email)
 	assert.Equal(t, res.Password, user.Password)
 }
 
 func TestEmailMustBeUnique(t *testing.T) {
-	db := initDB(false)
+	db := MustInitTestDB(false)
 	defer db.Close()
 
 	user1 := User{Email: "john@acme.org", Password: "t0ps3cr3t", Role: RoleUser}
@@ -42,7 +42,7 @@ func TestEmailMustBeUnique(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
-	db := initDB(true)
+	db := MustInitTestDB(true)
 	defer db.Close()
 
 	var result []*User
@@ -54,7 +54,7 @@ func TestListUsers(t *testing.T) {
 }
 
 func TestUserHasResources(t *testing.T) {
-	db := initDB(true)
+	db := MustInitTestDB(true)
 	defer db.Close()
 
 	var u User

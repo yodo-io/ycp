@@ -41,8 +41,8 @@ func loadSampleData(db *gorm.DB) error {
 	}
 	for _, rc := range sampleResources {
 		// replace references with generated database IDs
-		rc.UserID = sampleUsers[rc.UserID].Model.ID
-		rc.CatalogID = sampleCatalog[rc.CatalogID].Model.ID
+		rc.UserID = sampleUsers[rc.UserID].ID
+		rc.CatalogID = sampleCatalog[rc.CatalogID].ID
 		// insert
 		if err := db.Create(&rc).Error; err != nil {
 			return err

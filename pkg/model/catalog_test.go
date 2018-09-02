@@ -7,7 +7,7 @@ import (
 )
 
 func TestCanInsertCatalog(t *testing.T) {
-	db := initDB(false)
+	db := MustInitTestDB(false)
 	defer db.Close()
 
 	item := Catalog{Name: "db.instance.small"}
@@ -16,14 +16,14 @@ func TestCanInsertCatalog(t *testing.T) {
 	}
 
 	res := Catalog{}
-	db.First(&res, item.Model.ID)
+	db.First(&res, item.ID)
 
-	assert.NotZero(t, item.Model.ID)
+	assert.NotZero(t, item.ID)
 	assert.Equal(t, item.Name, res.Name)
 }
 
 func TestCannotInsertDuplicateName(t *testing.T) {
-	db := initDB(false)
+	db := MustInitTestDB(false)
 	defer db.Close()
 
 	name := "db.instance.small"
@@ -40,7 +40,7 @@ func TestCannotInsertDuplicateName(t *testing.T) {
 }
 
 func TestListCatalog(t *testing.T) {
-	db := initDB(true)
+	db := MustInitTestDB(true)
 	defer db.Close()
 
 	var result []*Catalog

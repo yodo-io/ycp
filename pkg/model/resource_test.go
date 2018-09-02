@@ -7,7 +7,7 @@ import (
 )
 
 func TestCanInsertResource(t *testing.T) {
-	db := initDB(false)
+	db := MustInitTestDB(false)
 	defer db.Close()
 
 	rc := Resource{Name: "my database server"}
@@ -23,7 +23,7 @@ func TestCanInsertResource(t *testing.T) {
 }
 
 func TestListResources(t *testing.T) {
-	db := initDB(true)
+	db := MustInitTestDB(true)
 	defer db.Close()
 
 	var result []*Resource
@@ -35,7 +35,7 @@ func TestListResources(t *testing.T) {
 }
 
 func TestBelongsToUser(t *testing.T) {
-	db := initDB(true)
+	db := MustInitTestDB(true)
 	defer db.Close()
 
 	var rc Resource
@@ -50,7 +50,7 @@ func TestBelongsToUser(t *testing.T) {
 }
 
 func TestBelongsToCatalog(t *testing.T) {
-	db := initDB(true)
+	db := MustInitTestDB(true)
 	defer db.Close()
 
 	var rc Resource

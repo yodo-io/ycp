@@ -2,13 +2,11 @@ package model
 
 import (
 	"fmt"
-
-	"github.com/jinzhu/gorm"
 )
 
 // Catalog is an item in the catalog of available resources
 type Catalog struct {
-	gorm.Model
+	ID   uint   `gorm:"primary_key"`
 	Name string `gorm:"not null;unique_index"`
 }
 

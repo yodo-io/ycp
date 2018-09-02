@@ -29,7 +29,7 @@ type User struct {
 	ID        uint       `gorm:"primary_key"            json:"id"`
 	Email     string     `gorm:"not null;unique_index"  json:"email"               binding:"required,email"`
 	Password  string     `gorm:"not null"               json:"password,omitempty"  binding:"required"`
-	Role      Role       `gorm:"not null"               json:"role,omitempty"      binding:"userrole"`
+	Role      Role       `gorm:"not null"               json:"role,omitempty"      binding:"omitempty,userrole"`
 	Resources []Resource `json:",omitempty"`
 }
 
@@ -40,9 +40,7 @@ func (u User) String() string {
 func validateRole(v *validator.Validate, ts reflect.Value, cs reflect.Value, f reflect.Value, ft reflect.Type, fk reflect.Kind, param string) bool {
 	if val, ok := f.Interface().(Role); ok {
 		// somewhat dirty, but OK for only 2 roles
-		return val == "" ||
-			val == RoleAdmin ||
-			val == RoleUser
+		return val == RoleAdmin || val == RoleUser
 	}
 	return true
 }

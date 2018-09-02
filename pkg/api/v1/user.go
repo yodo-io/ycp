@@ -13,11 +13,11 @@ type users struct {
 }
 
 func (uc *users) list(c *gin.Context) (int, interface{}) {
-	var users []model.User
+	var users []*model.User
 	if err := uc.db.Find(&users).Error; err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return http.StatusOK, users
+	return http.StatusOK, safeAll(users)
 }
 
 func (uc *users) create(c *gin.Context) (int, interface{}) {
@@ -31,10 +31,77 @@ func (uc *users) create(c *gin.Context) (int, interface{}) {
 	if err := uc.db.Create(&u).Error; err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return http.StatusCreated, safe(u)
+	return http.StatusCreated, safe(&u)
 }
 
-func safe(u model.User) model.User {
+func (uc *users) get(c *gin.Context) (int, interface{}) {
+	var u []*model.User
+	id := c.Param("id")
+
+	if err := uc.db.Find(&u, "id = ?", id).Error; err != nil {
+		return http.StatusInternalServerError, err
+	}
+	if len(u) == 0 {
+		return http.StatusNotFound, errorResponse{Error: "Not Found"}
+	}
+	return http.StatusOK, safe(u[0])
+}
+
+func (uc *users) delete(c *gin.Context) (int, interface{}) {
+	id := c.Param("id")
+	var u []*model.User
+
+	if err := uc.db.Find(&u, "id = ?", id).Error; err != nil {
+		return http.StatusInternalServerError, err
+	}
+	if len(u) == 0 {
+		return http.StatusNotFound, errorResponse{Error: "Not Found"}
+	}
+	if err := uc.db.Delete(u[0], "id = ?", id).Error; err != nil {
+		return http.StatusInternalServerError, err
+	}
+	return http.StatusOK, safe(u[0])
+}
+
+type userPatch struct {
+	Email    string     `json:"email" binding:"omitempty,email"`
+	Role     model.Role `json:"role" binding:"omitempty,userrole"`
+	Password string     `json:"password"`
+}
+
+func (uc *users) update(c *gin.Context) (int, interface{}) {
+	id := c.Param("id")
+	var u []*model.User
+
+	if err := uc.db.Find(&u, "id = ?", id).Error; err != nil {
+		return http.StatusInternalServerError, err
+	}
+	if len(u) == 0 {
+		return http.StatusNotFound, errorResponse{"Not found"}
+	}
+
+	var up userPatch
+	if err := c.ShouldBind(&up); err != nil {
+		return http.StatusBadRequest, err
+	}
+	if err := uc.db.Model(&model.User{}).Where("id = ?", id).Omit("id").Updates(up).Error; err != nil {
+		return http.StatusInternalServerError, err
+	}
+	if err := uc.db.Find(&u, "id = ?", id).Error; err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, safe(u[0])
+}
+
+func safe(u *model.User) *model.User {
 	u.Password = ""
 	return u
+}
+
+func safeAll(users []*model.User) []*model.User {
+	for _, u := range users {
+		u.Password = ""
+	}
+	return users
 }

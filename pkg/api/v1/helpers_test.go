@@ -64,24 +64,26 @@ func shouldBeStatus(t *testing.T, r string, exp int, w *httptest.ResponseRecorde
 
 // Do request using httptest.ResponseRecorder, optionally send payload. Only a single value is
 // considered for payload, additional values are ignored.
-func doRequest(r *gin.Engine, method string, path string, payload ...interface{}) (*httptest.ResponseRecorder, error) {
+func mustRequest(t *testing.T, r *gin.Engine, method string, path string, payload ...interface{}) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	var data io.Reader
 
 	if len(payload) == 1 {
 		b, err := json.Marshal(payload[0])
 		if err != nil {
-			return nil, err
+			t.Fatal(err)
+			return nil
 		}
 		data = bytes.NewReader(b)
 	}
 
 	req, err := http.NewRequest(method, path, data)
 	if err != nil {
-		return nil, err
+		t.Fatal(err)
+		return nil
 	}
 	req.Header.Add("Content-type", "application/json")
 
 	r.ServeHTTP(w, req)
-	return w, nil
+	return w
 }

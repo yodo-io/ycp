@@ -18,6 +18,9 @@ func Setup(rg *gin.RouterGroup, db *gorm.DB) {
 
 	rg.GET("/users", h(uc.list))
 	rg.POST("/users", h(uc.create))
+	rg.GET("/users/:id", h(uc.get))
+	rg.DELETE("/users/:id", h(uc.delete))
+	rg.PATCH("/users/:id", h(uc.update))
 }
 
 // Simplified handler func for pure JSON APIs

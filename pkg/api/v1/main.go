@@ -31,10 +31,11 @@ func Setup(rg *gin.RouterGroup, db *gorm.DB) {
 	rg.GET("/resources/:uid", h(rc.listForUser))
 	rg.GET("/resources/:uid/:rid", h(rc.getForUser))
 	rg.DELETE("/resources/:uid/:rid", h(rc.deleteForUser))
+	rg.PATCH("/resources/:uid/:rid", h(notImplemented)) // TODO
 
-	// TODO
-	rg.PATCH("/resources/:uid/:rid", h(notImplemented))
-	rg.GET("/catalog", h(notImplemented))
+	// catalog api - can only browse for now
+	cc := &catalog{db}
+	rg.GET("/catalog", h(cc.list))
 }
 
 // Simplified handler func for pure JSON APIs

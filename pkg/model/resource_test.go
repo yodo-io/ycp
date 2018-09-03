@@ -34,7 +34,7 @@ func TestListResources(t *testing.T) {
 	assert.Len(t, result, len(sampleResources))
 }
 
-func TestBelongsToUser(t *testing.T) {
+func TestResourceBelongsToUser(t *testing.T) {
 	db := MustInitTestDB(true)
 	defer db.Close()
 
@@ -49,7 +49,7 @@ func TestBelongsToUser(t *testing.T) {
 	assert.Equal(t, "joe@example.org", u.Email)
 }
 
-func TestBelongsToCatalog(t *testing.T) {
+func TestResourceBelongsToCatalog(t *testing.T) {
 	db := MustInitTestDB(true)
 	defer db.Close()
 

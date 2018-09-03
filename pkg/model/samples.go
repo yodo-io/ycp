@@ -25,6 +25,10 @@ var sampleResources = []Resource{
 	{Name: "skillet for eggs", UserID: 1, Type: "pan.instance.s"},
 }
 
+var sampleQuotas = []Quota{
+	{Type: "pot.instance.small", UserID: 0, Value: 10},
+}
+
 func loadSampleData(db *gorm.DB) error {
 	// Need to repeat this 3 times because we don't have a generic list type :(
 	// Using []interface{} won't work: https://github.com/golang/go/wiki/InterfaceSlice
@@ -42,9 +46,16 @@ func loadSampleData(db *gorm.DB) error {
 	for _, rc := range sampleResources {
 		// replace references with generated database IDs
 		rc.UserID = sampleUsers[rc.UserID].ID
-		// rc.CatalogID = sampleCatalog[rc.CatalogID].ID
 		// insert
 		if err := db.Create(&rc).Error; err != nil {
+			return err
+		}
+	}
+	for _, q := range sampleQuotas {
+		// replace references with generated database IDs
+		q.UserID = sampleUsers[q.UserID].ID
+		// insert
+		if err := db.Create(&q).Error; err != nil {
 			return err
 		}
 	}

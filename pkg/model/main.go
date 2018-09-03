@@ -11,6 +11,7 @@ func migrateAll(db *gorm.DB) error {
 		&Catalog{},
 		&User{},
 		&Resource{},
+		&Quota{},
 	).Error
 }
 

@@ -10,7 +10,7 @@ import (
 	"github.com/yodo-io/ycp/pkg/model"
 )
 
-var sampleData = false
+var sampleData = true
 var dbDriver = "sqlite3"
 var dbString = ":memory:"
 var addr = ":9000"

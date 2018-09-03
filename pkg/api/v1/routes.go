@@ -12,11 +12,11 @@ type errorResponse struct {
 	Error string `json:"error"`
 }
 
-// Setup registers all routes implemented by this module with the provided `RouterGroup`
+// Routes registers all routes implemented by this module with the provided `RouterGroup`
 // Accepting a `RouterGroup` reference makes it possible for client code to use the HTTP API
 // implemented by this module along with other modules.
 // The provided `gorm.DB` instance is passed to handlers to perform database related operations.
-func Setup(rg *gin.RouterGroup, db *gorm.DB) {
+func Routes(rg *gin.RouterGroup, db *gorm.DB) {
 	// user api
 	uc := &users{db}
 	rg.GET("/users", h(uc.list))

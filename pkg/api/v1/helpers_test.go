@@ -15,6 +15,6 @@ func mustInitRouter(sampleData bool) (*gin.Engine, func()) {
 		db.Close()
 	}
 	r := test.NewRouter()
-	Setup(&r.RouterGroup, db)
+	Routes(&r.RouterGroup, db)
 	return r, teardown
 }

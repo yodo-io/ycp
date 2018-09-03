@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/yodo-io/ycp/pkg/api"
 	"github.com/yodo-io/ycp/pkg/api/v1"
+	"github.com/yodo-io/ycp/pkg/api/v1/auth"
 	"github.com/yodo-io/ycp/pkg/model"
 )
 
@@ -39,12 +40,16 @@ func setupDB() (*gorm.DB, error) {
 }
 
 func setupGin(db *gorm.DB) (*gin.Engine, error) {
-	g := gin.Default()
+	secret := []byte("secret")
 
+	g := gin.Default()
 	g.NoRoute(api.NotFound)
 
+	g.POST("/auth/token", auth.Handler(db, secret))
+
 	rg := g.Group("/v1")
-	v1.Setup(rg, db)
+	rg.Use(auth.Middleware(secret))
+	v1.Routes(rg, db)
 
 	return g, nil
 }

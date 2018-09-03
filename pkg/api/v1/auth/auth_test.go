@@ -25,7 +25,7 @@ func mustInitRouter() (*gin.Engine, func()) {
 		db.Close()
 	}
 	r := test.NewRouter()
-	Routes(&r.RouterGroup, db, secret)
+	r.POST("/token", Handler(db, secret))
 	return r, teardown
 }
 

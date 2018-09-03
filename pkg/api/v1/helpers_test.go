@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yodo-io/ycp/pkg/api"
 	"github.com/yodo-io/ycp/pkg/model"
 )
 
@@ -22,9 +23,7 @@ func mustInitRouter(sampleData bool) (*gin.Engine, func()) {
 	db := model.MustInitTestDB(sampleData)
 
 	g := gin.New()
-	g.NoRoute(func(c *gin.Context) {
-		c.JSON(404, gin.H{}) // make sure we return json
-	})
+	g.NoRoute(api.NotFound)
 
 	rg := g.Group("/")
 	Setup(rg, db)

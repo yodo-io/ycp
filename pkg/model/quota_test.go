@@ -40,3 +40,7 @@ func TestQuotaBelongsToUser(t *testing.T) {
 	assert.NotEmpty(t, u.ID)
 	assert.Equal(t, q.UserID, u.ID)
 }
+
+func TestCannotInsertDuplicateQuota(t *testing.T) {
+	t.Skip("TODO")
+}

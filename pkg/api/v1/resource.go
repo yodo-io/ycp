@@ -20,7 +20,7 @@ func (rc *resources) create(c *gin.Context) (int, interface{}) {
 		return http.StatusBadRequest, err
 	}
 	// lookup catalog
-	cat, err := rc.lookupCatalog(r.Type)
+	cat, err := lookupCatalog(rc.db, r.Type)
 	if err != nil {
 		log.Println(err)
 		return http.StatusInternalServerError, err
@@ -39,7 +39,7 @@ func (rc *resources) create(c *gin.Context) (int, interface{}) {
 func (rc *resources) listForUser(c *gin.Context) (int, interface{}) {
 	userID := c.Param("uid")
 
-	u, err := rc.lookupUser(userID)
+	u, err := lookupUser(rc.db, userID)
 	if err != nil {
 		log.Println(err)
 		return http.StatusInternalServerError, err
@@ -90,26 +90,4 @@ func (rc *resources) deleteForUser(c *gin.Context) (int, interface{}) {
 		return http.StatusInternalServerError, err
 	}
 	return http.StatusOK, rs[0]
-}
-
-func (rc *resources) lookupUser(id string) (*model.User, error) {
-	var u []*model.User
-	if err := rc.db.Find(&u, "id = ?", id).Error; err != nil {
-		return nil, err
-	}
-	if len(u) == 0 {
-		return nil, nil
-	}
-	return u[0], nil
-}
-
-func (rc *resources) lookupCatalog(name string) (*model.Catalog, error) {
-	var c []*model.Catalog
-	if err := rc.db.Find(&c, "name = ?", name).Error; err != nil {
-		return nil, err
-	}
-	if len(c) == 0 {
-		return nil, nil
-	}
-	return c[0], nil
 }

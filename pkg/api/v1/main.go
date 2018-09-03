@@ -20,22 +20,29 @@ func Setup(rg *gin.RouterGroup, db *gorm.DB) {
 	// user api
 	uc := &users{db}
 	rg.GET("/users", h(uc.list))
-	rg.POST("/users", h(uc.create))
 	rg.GET("/users/:id", h(uc.get))
-	rg.DELETE("/users/:id", h(uc.delete))
+	rg.POST("/users", h(uc.create))
 	rg.PATCH("/users/:id", h(uc.update))
+	rg.DELETE("/users/:id", h(uc.delete))
 
 	// resource api
 	rc := &resources{db}
-	rg.POST("/resources", h(rc.create))
 	rg.GET("/resources/:uid", h(rc.listForUser))
 	rg.GET("/resources/:uid/:rid", h(rc.getForUser))
-	rg.DELETE("/resources/:uid/:rid", h(rc.deleteForUser))
+	rg.POST("/resources", h(rc.create))
 	rg.PATCH("/resources/:uid/:rid", h(notImplemented)) // TODO
+	rg.DELETE("/resources/:uid/:rid", h(rc.deleteForUser))
 
 	// catalog api - can only browse for now
 	cc := &catalog{db}
 	rg.GET("/catalog", h(cc.list))
+
+	// quota api
+	qc := &quotas{db}
+	rg.GET("/quotas/:uid", h(qc.listForUser))
+	rg.POST("/quotas/:uid", h(qc.createForUser))
+	rg.PATCH("/quotas/:uid/:qid", h(qc.updateForUser))
+	rg.DELETE("/quotas/:uid/:qid", h(qc.deleteForUser))
 }
 
 // Simplified handler func for pure JSON APIs

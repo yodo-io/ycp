@@ -13,12 +13,10 @@ import (
 func TestCreateResource(t *testing.T) {
 	tests := []struct {
 		in   model.Resource
-		out  model.Resource
 		code int
 	}{
 		{
 			in:   model.Resource{Name: "my database", Type: "pot.instance.small"},
-			out:  model.Resource{Name: "my database", Type: "pot.instance.small", ID: 5},
 			code: http.StatusCreated,
 		},
 	}
@@ -39,8 +37,8 @@ func TestCreateResource(t *testing.T) {
 			var res model.Resource
 			mustDecode(t, w, &res)
 			assert.NotZero(t, res.ID)
-			assert.Equal(t, tt.out.Name, res.Name)
-			assert.Equal(t, tt.out.Type, res.Type)
+			assert.Equal(t, tt.in.Name, res.Name)
+			assert.Equal(t, tt.in.Type, res.Type)
 		}()
 	}
 }

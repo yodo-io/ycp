@@ -2,10 +2,10 @@ package model
 
 // Quota represents a quota of how many instances of a given resource a user can have
 type Quota struct {
-	ID      uint    `gorm:"primary_key"`
-	Type    string  `                             binding:"required"`
-	UserID  uint    `                             binding:"required"`
-	Value   int     `                             binding:"required"`
+	ID      uint   `gorm:"primary_key"`
+	Type    string `                             binding:"required"`
+	UserID  uint
+	Value   int     `                            binding:"required"`
 	Catalog Catalog `gorm:"foreignkey:Type"`
 }
 

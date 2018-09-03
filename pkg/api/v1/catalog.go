@@ -19,3 +19,14 @@ func (cc *catalog) list(c *gin.Context) (int, interface{}) {
 	}
 	return http.StatusOK, entries
 }
+
+func lookupCatalog(db *gorm.DB, name string) (*model.Catalog, error) {
+	var c []*model.Catalog
+	if err := db.Find(&c, "name = ?", name).Error; err != nil {
+		return nil, err
+	}
+	if len(c) == 0 {
+		return nil, nil
+	}
+	return c[0], nil
+}

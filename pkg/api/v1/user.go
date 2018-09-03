@@ -12,6 +12,12 @@ type users struct {
 	db *gorm.DB
 }
 
+type userPatch struct {
+	Email    string     `json:"email" binding:"omitempty,email"`
+	Role     model.Role `json:"role" binding:"omitempty,userrole"`
+	Password string     `json:"password"`
+}
+
 func (uc *users) list(c *gin.Context) (int, interface{}) {
 	var users []*model.User
 	if err := uc.db.Find(&users).Error; err != nil {
@@ -63,12 +69,6 @@ func (uc *users) delete(c *gin.Context) (int, interface{}) {
 	return http.StatusOK, scrub(u[0])
 }
 
-type userPatch struct {
-	Email    string     `json:"email" binding:"omitempty,email"`
-	Role     model.Role `json:"role" binding:"omitempty,userrole"`
-	Password string     `json:"password"`
-}
-
 func (uc *users) update(c *gin.Context) (int, interface{}) {
 	id := c.Param("id")
 	var u []*model.User
@@ -106,4 +106,15 @@ func scrubAll(users []*model.User) []*model.User {
 		u.Password = ""
 	}
 	return users
+}
+
+func lookupUser(db *gorm.DB, id string) (*model.User, error) {
+	var u []*model.User
+	if err := db.Find(&u, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	if len(u) == 0 {
+		return nil, nil
+	}
+	return u[0], nil
 }

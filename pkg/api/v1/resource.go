@@ -14,7 +14,19 @@ type resources struct {
 	db *gorm.DB
 }
 
-func (rc *resources) create(c *gin.Context) (int, interface{}) {
+func (rc *resources) createForUser(c *gin.Context) (int, interface{}) {
+	uid := c.Param("uid")
+
+	// ensure user exists
+	u, err := lookupUser(rc.db, uid)
+	if err != nil {
+		log.Println(err)
+		return http.StatusInternalServerError, err
+	}
+	if u == nil {
+		return http.StatusNotFound, err
+	}
+
 	var r model.Resource
 	if err := c.ShouldBind(&r); err != nil {
 		return http.StatusBadRequest, err
@@ -28,12 +40,40 @@ func (rc *resources) create(c *gin.Context) (int, interface{}) {
 	if cat == nil {
 		return http.StatusBadRequest, errors.New("Invalid resource type")
 	}
+
+	// check quota
+	ok, err := rc.checkQuota(u.ID, cat.Name)
+	if err != nil {
+		log.Println(err)
+		return http.StatusInternalServerError, err
+	}
+	if !ok {
+		return http.StatusBadRequest, errors.New("quota exceeded")
+	}
+
 	// create resource
+	r.UserID = u.ID
 	if err := rc.db.Create(&r).Error; err != nil {
 		log.Println(err)
 		return http.StatusInternalServerError, err
 	}
 	return http.StatusCreated, r
+}
+
+func (rc *resources) checkQuota(uid uint, tp string) (bool, error) {
+	q, err := lookupQuota(rc.db, uid, tp)
+	if err != nil {
+		return false, err
+	}
+	if q == nil {
+		return true, nil
+	}
+
+	var n int
+	if err = rc.db.Model(&model.Resource{}).Where("user_id = ? and type = ?", uid, tp).Count(&n).Error; err != nil {
+		return false, err
+	}
+	return n < q.Value, nil
 }
 
 func (rc *resources) listForUser(c *gin.Context) (int, interface{}) {

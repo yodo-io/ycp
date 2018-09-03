@@ -129,3 +129,14 @@ func (qc *quotas) deleteForUser(c *gin.Context) (int, interface{}) {
 	}
 	return http.StatusOK, qs[0]
 }
+
+func lookupQuota(db *gorm.DB, uid uint, tp string) (*model.Quota, error) {
+	var q []*model.Quota
+	if err := db.Find(&q, "user_id = ? and type = ?", uid, tp).Error; err != nil {
+		return nil, err
+	}
+	if len(q) == 0 {
+		return nil, nil
+	}
+	return q[0], nil
+}

@@ -29,7 +29,7 @@ func Setup(rg *gin.RouterGroup, db *gorm.DB) {
 	rc := &resources{db}
 	rg.GET("/resources/:uid", h(rc.listForUser))
 	rg.GET("/resources/:uid/:rid", h(rc.getForUser))
-	rg.POST("/resources", h(rc.create))
+	rg.POST("/resources/:uid", h(rc.createForUser))
 	rg.PATCH("/resources/:uid/:rid", h(notImplemented)) // TODO
 	rg.DELETE("/resources/:uid/:rid", h(rc.deleteForUser))
 

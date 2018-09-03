@@ -102,7 +102,6 @@ func TestCreateQuota(t *testing.T) {
 		if w == nil {
 			continue
 		}
-
 		if !assert.Equal(t, tt.code, w.Code) {
 			continue
 		}
@@ -195,7 +194,6 @@ func TestUpdateQuota(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Logf("%#v\n", tt)
 		in := gin.H{"value": tt.value}
 		w := mustRequest(t, r, http.MethodPatch, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id), in)
 

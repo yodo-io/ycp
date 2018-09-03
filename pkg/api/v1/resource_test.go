@@ -12,12 +12,19 @@ import (
 
 func TestCreateResource(t *testing.T) {
 	tests := []struct {
-		in   model.Resource
-		code int
+		userID uint
+		in     model.Resource
+		code   int
 	}{
 		{
-			in:   model.Resource{Name: "my database", Type: "pot.instance.small"},
-			code: http.StatusCreated,
+			userID: 1,
+			in:     model.Resource{Name: "my database", Type: "pot.instance.small"},
+			code:   http.StatusCreated,
+		},
+		{
+			userID: 10,
+			in:     model.Resource{Name: "my database", Type: "pot.instance.small"},
+			code:   http.StatusNotFound,
 		},
 	}
 
@@ -26,43 +33,86 @@ func TestCreateResource(t *testing.T) {
 			r, td := mustInitRouter(true)
 			defer td()
 
-			w := mustRequest(t, r, http.MethodPost, "/resources", tt.in)
+			w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", tt.userID), tt.in)
 			if w == nil {
 				return
 			}
 			if !assert.Equal(t, tt.code, w.Code) {
-				return // unmarshalling will fail
+				return
+			}
+			if w.Code != http.StatusCreated {
+				return
 			}
 
 			var res model.Resource
 			mustDecode(t, w, &res)
 			assert.NotZero(t, res.ID)
+			assert.Equal(t, tt.userID, res.UserID)
 			assert.Equal(t, tt.in.Name, res.Name)
 			assert.Equal(t, tt.in.Type, res.Type)
 		}()
 	}
 }
 
+func TestResourceQuotaLimit(t *testing.T) {
+	r, td := mustInitRouter(true)
+	defer td()
+
+	limit := 10
+	userID := 1
+
+	in := model.Resource{
+		Name: "a small cooking pot",
+		Type: "pot.instance.small",
+	}
+
+	for i := 0; i < limit; i++ {
+		w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", userID), in)
+		if w == nil {
+			return
+		}
+		if !assert.Equal(t, http.StatusCreated, w.Code) {
+			return // unmarshalling will fail
+		}
+	}
+
+	w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", userID), in)
+	if w == nil {
+		return
+	}
+	if !assert.Equal(t, http.StatusBadRequest, w.Code) {
+		return
+	}
+
+	var e errorResponse
+	mustDecode(t, w, &e)
+	assert.Regexp(t, regexp.MustCompile("quota exceeded"), e.Error)
+}
+
 func TestResourceValidation(t *testing.T) {
 
 	tests := []struct {
-		in  model.Resource
-		err *regexp.Regexp
+		userID uint
+		in     model.Resource
+		err    *regexp.Regexp
 	}{
 		// no type
 		{
-			in:  model.Resource{Name: "my database"},
-			err: regexp.MustCompile(`(?i)type`),
+			userID: 1,
+			in:     model.Resource{Name: "my database"},
+			err:    regexp.MustCompile(`(?i)type`),
 		},
 		// no name
 		{
-			in:  model.Resource{Type: "pot.instance.small"},
-			err: regexp.MustCompile(`(?i)name`),
+			userID: 1,
+			in:     model.Resource{Type: "pot.instance.small"},
+			err:    regexp.MustCompile(`(?i)name`),
 		},
 		// invalid type
 		{
-			in:  model.Resource{Name: "my foo", Type: "foo.bar.baz"},
-			err: regexp.MustCompile(`(?i)type`),
+			userID: 1,
+			in:     model.Resource{Name: "my foo", Type: "foo.bar.baz"},
+			err:    regexp.MustCompile(`(?i)type`),
 		},
 	}
 
@@ -71,7 +121,7 @@ func TestResourceValidation(t *testing.T) {
 			r, td := mustInitRouter(true)
 			defer td()
 
-			w := mustRequest(t, r, http.MethodPost, "/resources", tt.in)
+			w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", tt.userID), tt.in)
 			if w == nil {
 				return
 			}
@@ -159,7 +209,7 @@ func TestGetResource(t *testing.T) {
 	}
 }
 
-func TestDeleteForUser(t *testing.T) {
+func TestDeleteResourceForUser(t *testing.T) {
 	r, td := mustInitRouter(true)
 	defer td()
 

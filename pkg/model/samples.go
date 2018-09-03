@@ -19,10 +19,10 @@ var sampleCatalog = []*Catalog{
 
 // UserID and CatalogID refer to idx in sample slices, will be replaced before insert
 var sampleResources = []Resource{
-	{Name: "pasta pod", UserID: 0, CatalogID: 1},
-	{Name: "rice pot", UserID: 0, CatalogID: 2},
-	{Name: "stir fry pan", UserID: 1, CatalogID: 3},
-	{Name: "skillet for eggs", UserID: 1, CatalogID: 4},
+	{Name: "pasta pot", UserID: 0, Type: "pot.instance.large"},
+	{Name: "rice pot", UserID: 0, Type: "pot.instance.xlarge"},
+	{Name: "stir fry pan", UserID: 1, Type: "pan.instance.wok"},
+	{Name: "skillet for eggs", UserID: 1, Type: "pan.instance.s"},
 }
 
 func loadSampleData(db *gorm.DB) error {
@@ -42,7 +42,7 @@ func loadSampleData(db *gorm.DB) error {
 	for _, rc := range sampleResources {
 		// replace references with generated database IDs
 		rc.UserID = sampleUsers[rc.UserID].ID
-		rc.CatalogID = sampleCatalog[rc.CatalogID].ID
+		// rc.CatalogID = sampleCatalog[rc.CatalogID].ID
 		// insert
 		if err := db.Create(&rc).Error; err != nil {
 			return err

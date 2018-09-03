@@ -1,6 +1,9 @@
 package v1
 
 import (
+	"errors"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 )
@@ -14,19 +17,34 @@ type errorResponse struct {
 // implemented by this module along with other modules.
 // The provided `gorm.DB` instance is passed to handlers to perform database related operations.
 func Setup(rg *gin.RouterGroup, db *gorm.DB) {
+	// user api
 	uc := &users{db}
-
 	rg.GET("/users", h(uc.list))
 	rg.POST("/users", h(uc.create))
 	rg.GET("/users/:id", h(uc.get))
 	rg.DELETE("/users/:id", h(uc.delete))
 	rg.PATCH("/users/:id", h(uc.update))
+
+	// resource api
+	rc := &resources{db}
+	rg.POST("/resources", h(rc.create))
+	rg.GET("/resources/:uid", h(rc.listForUser))
+	rg.GET("/resources/:uid/:rid", h(rc.getForUser))
+	rg.DELETE("/resources/:uid/:rid", h(rc.deleteForUser))
+
+	// TODO
+	rg.PATCH("/resources/:uid/:rid", h(notImplemented))
+	rg.GET("/catalog", h(notImplemented))
 }
 
 // Simplified handler func for pure JSON APIs
 // If second return val is an error it will be converted into an errorResponse
 // Otherwise it will be marshalled as-is and sent along with the status code
 type handlerFunc func(c *gin.Context) (int, interface{})
+
+func notImplemented(c *gin.Context) (int, interface{}) {
+	return http.StatusNotImplemented, errors.New("Not implemented")
+}
 
 // Convert internal handler funcs into gin handlers
 func h(fn handlerFunc) gin.HandlerFunc {

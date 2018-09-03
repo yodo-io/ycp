@@ -16,9 +16,9 @@ func TestCanInsertCatalog(t *testing.T) {
 	}
 
 	res := Catalog{}
-	db.First(&res, item.ID)
+	db.First(&res, "name = ?", item.Name)
 
-	assert.NotZero(t, item.ID)
+	assert.NotEmpty(t, item.Name)
 	assert.Equal(t, item.Name, res.Name)
 }
 

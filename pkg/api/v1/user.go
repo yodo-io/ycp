@@ -17,7 +17,7 @@ func (uc *users) list(c *gin.Context) (int, interface{}) {
 	if err := uc.db.Find(&users).Error; err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return http.StatusOK, safeAll(users)
+	return http.StatusOK, scrubAll(users)
 }
 
 func (uc *users) create(c *gin.Context) (int, interface{}) {
@@ -31,7 +31,7 @@ func (uc *users) create(c *gin.Context) (int, interface{}) {
 	if err := uc.db.Create(&u).Error; err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return http.StatusCreated, safe(&u)
+	return http.StatusCreated, scrub(&u)
 }
 
 func (uc *users) get(c *gin.Context) (int, interface{}) {
@@ -44,7 +44,7 @@ func (uc *users) get(c *gin.Context) (int, interface{}) {
 	if len(u) == 0 {
 		return http.StatusNotFound, errorResponse{Error: "Not Found"}
 	}
-	return http.StatusOK, safe(u[0])
+	return http.StatusOK, scrub(u[0])
 }
 
 func (uc *users) delete(c *gin.Context) (int, interface{}) {
@@ -60,7 +60,7 @@ func (uc *users) delete(c *gin.Context) (int, interface{}) {
 	if err := uc.db.Delete(u[0], "id = ?", id).Error; err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return http.StatusOK, safe(u[0])
+	return http.StatusOK, scrub(u[0])
 }
 
 type userPatch struct {
@@ -91,15 +91,17 @@ func (uc *users) update(c *gin.Context) (int, interface{}) {
 		return http.StatusInternalServerError, err
 	}
 
-	return http.StatusOK, safe(u[0])
+	return http.StatusOK, scrub(u[0])
 }
 
-func safe(u *model.User) *model.User {
+// Remove sensitive information from user object
+func scrub(u *model.User) *model.User {
 	u.Password = ""
 	return u
 }
 
-func safeAll(users []*model.User) []*model.User {
+// Remove sensitive information from a sclice of user objects
+func scrubAll(users []*model.User) []*model.User {
 	for _, u := range users {
 		u.Password = ""
 	}

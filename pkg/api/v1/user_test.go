@@ -2,7 +2,6 @@ package v1
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"regexp"
 	"testing"
@@ -37,8 +36,6 @@ func TestCreateUser(t *testing.T) {
 			}
 
 			if !assert.Equal(t, http.StatusCreated, w.Code) {
-				d, _ := ioutil.ReadAll(w.Body)
-				fmt.Println(string(d))
 				return // unmarshalling will fail
 			}
 
@@ -49,7 +46,7 @@ func TestCreateUser(t *testing.T) {
 	}
 }
 
-func TestValidation(t *testing.T) {
+func TestUserValidation(t *testing.T) {
 
 	tests := []struct {
 		in  model.User

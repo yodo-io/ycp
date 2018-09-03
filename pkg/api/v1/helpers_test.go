@@ -37,11 +37,13 @@ func mustInitRouter(sampleData bool) (*gin.Engine, func()) {
 }
 
 // Decode JSON payload from buffer into receiver value
-func mustDecode(t *testing.T, w *httptest.ResponseRecorder, to interface{}) {
+func mustDecode(t *testing.T, w *httptest.ResponseRecorder, to interface{}) bool {
 	d, _ := ioutil.ReadAll(w.Body)
 	if err := json.Unmarshal(d, to); err != nil {
 		t.Fatal(err)
+		return false
 	}
+	return true
 }
 
 // Check if status meets expectations, if not, abort test

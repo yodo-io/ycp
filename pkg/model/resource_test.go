@@ -16,9 +16,9 @@ func TestCanInsertResource(t *testing.T) {
 	}
 
 	res := Resource{}
-	db.First(&res, rc.Model.ID)
+	db.First(&res, rc.ID)
 
-	assert.NotZero(t, rc.Model.ID)
+	assert.NotZero(t, rc.ID)
 	assert.Equal(t, rc.Name, res.Name)
 }
 
@@ -54,12 +54,11 @@ func TestBelongsToCatalog(t *testing.T) {
 	defer db.Close()
 
 	var rc Resource
-	var c Catalog
 
-	if err := db.First(&rc).Related(&c).Error; err != nil {
+	if err := db.Preload("Catalog").First(&rc).Error; err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotEmpty(t, c)
-	assert.Equal(t, "pot.instance.large", c.Name)
+	assert.NotEmpty(t, rc.Catalog)
+	assert.Equal(t, rc.Catalog.Name, rc.Type)
 }

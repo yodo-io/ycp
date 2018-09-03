@@ -6,8 +6,7 @@ import (
 
 // Catalog is an item in the catalog of available resources
 type Catalog struct {
-	ID   uint   `gorm:"primary_key"`
-	Name string `gorm:"not null;unique_index"`
+	Name string `gorm:"not null;primary_key"`
 }
 
 func (c Catalog) String() string {

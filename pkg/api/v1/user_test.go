@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/yodo-io/ycp/pkg/api/test"
 	"github.com/yodo-io/ycp/pkg/model"
 )
 
@@ -30,7 +31,7 @@ func TestCreateUser(t *testing.T) {
 			r, td := mustInitRouter(false)
 			defer td()
 
-			w := mustRequest(t, r, http.MethodPost, "/users", tt.in)
+			w := test.MustRecord(t, r, http.MethodPost, "/users", tt.in)
 			if w == nil {
 				return
 			}
@@ -40,7 +41,7 @@ func TestCreateUser(t *testing.T) {
 			}
 
 			var res model.User
-			mustDecode(t, w, &res)
+			test.MustDecode(t, w, &res)
 			assert.Equal(t, tt.out, res)
 		}()
 	}
@@ -79,7 +80,7 @@ func TestUserValidation(t *testing.T) {
 			r, td := mustInitRouter(false)
 			defer td()
 
-			w := mustRequest(t, r, http.MethodPost, "/users", tt.in)
+			w := test.MustRecord(t, r, http.MethodPost, "/users", tt.in)
 			if w == nil {
 				return
 			}
@@ -88,7 +89,7 @@ func TestUserValidation(t *testing.T) {
 			}
 
 			var res map[string]interface{}
-			mustDecode(t, w, &res)
+			test.MustDecode(t, w, &res)
 			assert.NotEmpty(t, res["error"])
 			assert.Regexp(t, tt.err, res["error"].(string))
 		}()
@@ -99,7 +100,7 @@ func TestGetUsers(t *testing.T) {
 	r, td := mustInitRouter(true)
 	defer td()
 
-	w := mustRequest(t, r, http.MethodGet, "/users")
+	w := test.MustRecord(t, r, http.MethodGet, "/users")
 	if w == nil {
 		return
 	}
@@ -108,7 +109,7 @@ func TestGetUsers(t *testing.T) {
 	}
 
 	var res []model.User
-	mustDecode(t, w, &res)
+	test.MustDecode(t, w, &res)
 	assert.NotEmpty(t, res)
 
 	for _, u := range res {
@@ -131,7 +132,7 @@ func TestGetUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		w := mustRequest(t, r, http.MethodGet, fmt.Sprintf("/users/%d", tt.id))
+		w := test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/users/%d", tt.id))
 		if w == nil {
 			continue
 		}
@@ -144,7 +145,7 @@ func TestGetUser(t *testing.T) {
 		}
 
 		var u model.User
-		mustDecode(t, w, &u)
+		test.MustDecode(t, w, &u)
 		assert.NotEmpty(t, u)
 		assert.Equal(t, tt.id, u.ID)
 		assert.NotEmpty(t, u.Email)
@@ -166,7 +167,7 @@ func TestDeleteUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		w := mustRequest(t, r, http.MethodDelete, fmt.Sprintf("/users/%d", tt.id))
+		w := test.MustRecord(t, r, http.MethodDelete, fmt.Sprintf("/users/%d", tt.id))
 		if w == nil {
 			continue
 		}
@@ -178,7 +179,7 @@ func TestDeleteUser(t *testing.T) {
 		}
 
 		var u model.User
-		mustDecode(t, w, &u)
+		test.MustDecode(t, w, &u)
 		assert.NotEmpty(t, u)
 		assert.Equal(t, tt.id, u.ID)
 		assert.NotEmpty(t, u.Email)
@@ -186,7 +187,7 @@ func TestDeleteUser(t *testing.T) {
 		assert.Empty(t, u.Password)
 
 		// make sure user was really deleted
-		w = mustRequest(t, r, http.MethodGet, fmt.Sprintf("/users/%d", tt.id))
+		w = test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/users/%d", tt.id))
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	}
 }
@@ -208,7 +209,7 @@ func TestUpdateUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		w := mustRequest(t, r, http.MethodPatch, fmt.Sprintf("/users/%d", tt.id), tt.user)
+		w := test.MustRecord(t, r, http.MethodPatch, fmt.Sprintf("/users/%d", tt.id), tt.user)
 		if w == nil {
 			continue
 		}
@@ -220,7 +221,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		var u model.User
-		mustDecode(t, w, &u)
+		test.MustDecode(t, w, &u)
 		assert.NotEmpty(t, u)
 		assert.Equal(t, tt.id, u.ID)
 		assert.NotEmpty(t, u.Email)

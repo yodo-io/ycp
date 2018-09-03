@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/yodo-io/ycp/pkg/api/test"
 	"github.com/yodo-io/ycp/pkg/model"
 )
 
@@ -36,7 +37,7 @@ func TestGetQuotaForUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		w := mustRequest(t, r, http.MethodGet, fmt.Sprintf("/quotas/%d", tt.userID))
+		w := test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/quotas/%d", tt.userID))
 		if w == nil {
 			continue
 		}
@@ -48,7 +49,7 @@ func TestGetQuotaForUser(t *testing.T) {
 		}
 
 		var res []model.Quota
-		mustDecode(t, w, &res)
+		test.MustDecode(t, w, &res)
 
 		assert.Len(t, res, tt.len)
 		for _, q := range res {
@@ -98,7 +99,7 @@ func TestCreateQuota(t *testing.T) {
 
 	for _, tt := range tests {
 		// t.Logf("%#v\n", tt.in)
-		w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/quotas/%d", tt.userID), tt.in)
+		w := test.MustRecord(t, r, http.MethodPost, fmt.Sprintf("/quotas/%d", tt.userID), tt.in)
 		if w == nil {
 			continue
 		}
@@ -110,7 +111,7 @@ func TestCreateQuota(t *testing.T) {
 		}
 
 		var res model.Quota
-		mustDecode(t, w, &res)
+		test.MustDecode(t, w, &res)
 		assert.NotZero(t, res.ID)
 		assert.Equal(t, tt.in.Type, res.Type)
 		assert.Equal(t, tt.in.Value, res.Value)
@@ -133,7 +134,7 @@ func TestDeleteQuota(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		w := mustRequest(t, r, http.MethodDelete, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id))
+		w := test.MustRecord(t, r, http.MethodDelete, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id))
 		if w == nil {
 			continue
 		}
@@ -145,14 +146,14 @@ func TestDeleteQuota(t *testing.T) {
 		}
 
 		var q model.Quota
-		mustDecode(t, w, &q)
+		test.MustDecode(t, w, &q)
 		assert.NotEmpty(t, q)
 		assert.Equal(t, tt.id, q.ID)
 		assert.Equal(t, tt.userID, q.UserID)
 		assert.NotEmpty(t, q.Type)
 
 		// test if resource was really deleted
-		w = mustRequest(t, r, http.MethodGet, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id))
+		w = test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id))
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	}
 }
@@ -195,7 +196,7 @@ func TestUpdateQuota(t *testing.T) {
 
 	for _, tt := range tests {
 		in := gin.H{"value": tt.value}
-		w := mustRequest(t, r, http.MethodPatch, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id), in)
+		w := test.MustRecord(t, r, http.MethodPatch, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id), in)
 
 		if w == nil {
 			continue
@@ -208,7 +209,7 @@ func TestUpdateQuota(t *testing.T) {
 		}
 
 		var q model.Quota
-		mustDecode(t, w, &q)
+		test.MustDecode(t, w, &q)
 		assert.NotEmpty(t, q)
 		assert.Equal(t, tt.id, q.ID)
 		assert.Equal(t, tt.userID, q.UserID)

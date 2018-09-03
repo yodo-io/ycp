@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/yodo-io/ycp/pkg/api/test"
 	"github.com/yodo-io/ycp/pkg/model"
 )
 
@@ -33,7 +34,7 @@ func TestCreateResource(t *testing.T) {
 			r, td := mustInitRouter(true)
 			defer td()
 
-			w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", tt.userID), tt.in)
+			w := test.MustRecord(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", tt.userID), tt.in)
 			if w == nil {
 				return
 			}
@@ -45,7 +46,7 @@ func TestCreateResource(t *testing.T) {
 			}
 
 			var res model.Resource
-			mustDecode(t, w, &res)
+			test.MustDecode(t, w, &res)
 			assert.NotZero(t, res.ID)
 			assert.Equal(t, tt.userID, res.UserID)
 			assert.Equal(t, tt.in.Name, res.Name)
@@ -67,7 +68,7 @@ func TestResourceQuotaLimit(t *testing.T) {
 	}
 
 	for i := 0; i < limit; i++ {
-		w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", userID), in)
+		w := test.MustRecord(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", userID), in)
 		if w == nil {
 			return
 		}
@@ -76,7 +77,7 @@ func TestResourceQuotaLimit(t *testing.T) {
 		}
 	}
 
-	w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", userID), in)
+	w := test.MustRecord(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", userID), in)
 	if w == nil {
 		return
 	}
@@ -85,7 +86,7 @@ func TestResourceQuotaLimit(t *testing.T) {
 	}
 
 	var e errorResponse
-	mustDecode(t, w, &e)
+	test.MustDecode(t, w, &e)
 	assert.Regexp(t, regexp.MustCompile("quota exceeded"), e.Error)
 }
 
@@ -121,7 +122,7 @@ func TestResourceValidation(t *testing.T) {
 			r, td := mustInitRouter(true)
 			defer td()
 
-			w := mustRequest(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", tt.userID), tt.in)
+			w := test.MustRecord(t, r, http.MethodPost, fmt.Sprintf("/resources/%d", tt.userID), tt.in)
 			if w == nil {
 				return
 			}
@@ -130,7 +131,7 @@ func TestResourceValidation(t *testing.T) {
 			}
 
 			var res map[string]interface{}
-			mustDecode(t, w, &res)
+			test.MustDecode(t, w, &res)
 			assert.NotEmpty(t, res["error"])
 			assert.Regexp(t, tt.err, res["error"].(string))
 		}()
@@ -151,7 +152,7 @@ func TestGetResources(t *testing.T) {
 
 	for _, tt := range tests {
 		// we only support to get resources scoped to a user
-		w := mustRequest(t, r, http.MethodGet, fmt.Sprintf("/resources/%d", tt.userID))
+		w := test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/resources/%d", tt.userID))
 		if w == nil {
 			continue
 		}
@@ -163,7 +164,7 @@ func TestGetResources(t *testing.T) {
 		}
 
 		var res []*model.Resource
-		mustDecode(t, w, &res)
+		test.MustDecode(t, w, &res)
 		assert.NotEmpty(t, res)
 		for _, r := range res {
 			assert.NotEmpty(t, r.Name)
@@ -188,7 +189,7 @@ func TestGetResource(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		w := mustRequest(t, r, http.MethodGet, fmt.Sprintf("/resources/%d/%d", tt.userID, tt.id))
+		w := test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/resources/%d/%d", tt.userID, tt.id))
 		if w == nil {
 			continue
 		}
@@ -200,7 +201,7 @@ func TestGetResource(t *testing.T) {
 		}
 
 		var rc model.Resource
-		mustDecode(t, w, &rc)
+		test.MustDecode(t, w, &rc)
 		assert.NotEmpty(t, rc)
 		assert.Equal(t, tt.id, rc.ID)
 		assert.Equal(t, tt.userID, rc.UserID)
@@ -224,7 +225,7 @@ func TestDeleteResourceForUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		w := mustRequest(t, r, http.MethodDelete, fmt.Sprintf("/resources/%d/%d", tt.userID, tt.id))
+		w := test.MustRecord(t, r, http.MethodDelete, fmt.Sprintf("/resources/%d/%d", tt.userID, tt.id))
 		if w == nil {
 			continue
 		}
@@ -236,7 +237,7 @@ func TestDeleteResourceForUser(t *testing.T) {
 		}
 
 		var rc model.Resource
-		mustDecode(t, w, &rc)
+		test.MustDecode(t, w, &rc)
 		assert.NotEmpty(t, rc)
 		assert.Equal(t, tt.id, rc.ID)
 		assert.Equal(t, tt.userID, rc.UserID)
@@ -244,7 +245,7 @@ func TestDeleteResourceForUser(t *testing.T) {
 		assert.NotEmpty(t, rc.Type)
 
 		// test if resource was really deleted
-		w = mustRequest(t, r, http.MethodGet, fmt.Sprintf("/resources/%d/%d", tt.userID, tt.id))
+		w = test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/resources/%d/%d", tt.userID, tt.id))
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	}
 }
@@ -268,7 +269,7 @@ func TestUpdateResource(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		w := mustRequest(t, r, http.MethodPatch, fmt.Sprintf("/resources/%d/%d", tt.userID, tt.id), tt.in)
+		w := test.MustRecord(t, r, http.MethodPatch, fmt.Sprintf("/resources/%d/%d", tt.userID, tt.id), tt.in)
 		if w == nil {
 			continue
 		}
@@ -280,7 +281,7 @@ func TestUpdateResource(t *testing.T) {
 		}
 
 		var rc model.Resource
-		mustDecode(t, w, &rc)
+		test.MustDecode(t, w, &rc)
 		assert.NotEmpty(t, rc)
 		assert.Equal(t, tt.id, rc.ID)
 		assert.Equal(t, tt.userID, rc.UserID)

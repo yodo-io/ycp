@@ -7,6 +7,6 @@ import (
 
 // Routes registers the routes for the auth module with given RouterGroup
 func Routes(rg *gin.RouterGroup, db *gorm.DB, secret []byte) {
-	ac := new(db, secret)
+	ac := newAuthz(db, secret)
 	rg.POST("/token", ac.createToken)
 }

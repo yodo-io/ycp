@@ -39,8 +39,19 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func new(db *gorm.DB, secret []byte) *authz {
+func newAuthz(db *gorm.DB, secret []byte) *authz {
 	return &authz{db, secret}
+}
+
+func newResponse(tokenStr string) *tokenResponse {
+	return &tokenResponse{tokenStr}
+}
+
+func newRequest(email, password string) *tokenRequest {
+	return &tokenRequest{
+		Email:    email,
+		Password: password,
+	}
 }
 
 func claimsFor(u *model.User) *Claims {
@@ -54,7 +65,11 @@ func claimsFor(u *model.User) *Claims {
 	}
 }
 
-func (a *authz) tokenFor(u *model.User) (string, error) {
+func (a *authz) tokenFor(tr *tokenRequest) (string, error) {
+	u, err := a.validateUser(tr.Email, tr.Password)
+	if err != nil {
+		return "", err
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsFor(u))
 	return token.SignedString(a.secret)
 }
@@ -77,7 +92,7 @@ func (a *authz) createToken(c *gin.Context) {
 		return
 	}
 
-	u, err := a.validateUser(tr.Email, tr.Password)
+	ts, err := a.tokenFor(&tr)
 	if err == errAuthFailed {
 		c.JSON(http.StatusBadRequest, api.Error(err))
 		return
@@ -87,11 +102,5 @@ func (a *authz) createToken(c *gin.Context) {
 		return
 	}
 
-	t, err := a.tokenFor(u)
-	if err != nil {
-		api.Fatal(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, tokenResponse{Token: t})
+	c.JSON(http.StatusOK, newResponse(ts))
 }

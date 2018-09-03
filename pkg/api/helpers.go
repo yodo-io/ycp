@@ -18,6 +18,10 @@ func ErrStr(s string) errorResponse {
 	return errorResponse{s}
 }
 
+func Unauthorized(c *gin.Context) {
+	c.AbortWithStatusJSON(http.StatusUnauthorized, ErrStr("Unauthorized"))
+}
+
 func Fatal(c *gin.Context, err error) {
-	c.JSON(http.StatusInternalServerError, err)
+	c.AbortWithStatusJSON(http.StatusInternalServerError, err)
 }

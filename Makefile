@@ -1,11 +1,10 @@
 build: bin/ycp
 
 test:
-	go test ./...
+	GO111MODULE=on go test ./...
 
 bin/ycp:
-	dep ensure
-	go build -o bin/ycp
+	GO111MODULE=on go build -o bin/ycp
 
 run: bin/ycp
 	./bin/ycp 

@@ -12,6 +12,7 @@ import (
 	"github.com/yodo-io/ycp/pkg/model"
 )
 
+// TODO: flags for these
 var sampleData = true
 var dbDriver = "sqlite3"
 var dbString = ":memory:"

@@ -2,6 +2,11 @@
 
 Your next best cloud provider.
 
+## Prerequisites
+
+- Go and [dep](https://golang.github.io/dep/)
+- Make (optional)
+
 ## Usage
 
 - Run all tests: `make test`

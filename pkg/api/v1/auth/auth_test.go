@@ -63,9 +63,6 @@ func TestAuth(t *testing.T) {
 
 	for _, tt := range tests {
 		w := test.MustRecord(t, r, http.MethodPost, "/token", tt.tr)
-		if w == nil {
-			continue
-		}
 		if !assert.Equal(t, tt.code, w.Code) {
 			continue
 		}
@@ -74,7 +71,7 @@ func TestAuth(t *testing.T) {
 		}
 
 		var res tokenResponse
-		test.MustDecode(t, w, &res)
+		test.MustBind(t, w, &res)
 
 		var c Claims
 		if _, err := jwt.ParseWithClaims(res.Token, &c, testKeyFunc); err != nil {

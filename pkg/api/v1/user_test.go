@@ -32,16 +32,12 @@ func TestCreateUser(t *testing.T) {
 			defer td()
 
 			w := test.MustRecord(t, r, http.MethodPost, "/users", tt.in)
-			if w == nil {
-				return
-			}
-
 			if !assert.Equal(t, http.StatusCreated, w.Code) {
 				return // unmarshalling will fail
 			}
 
 			var res model.User
-			test.MustDecode(t, w, &res)
+			test.MustBind(t, w, &res)
 			assert.Equal(t, tt.out, res)
 		}()
 	}
@@ -81,15 +77,12 @@ func TestUserValidation(t *testing.T) {
 			defer td()
 
 			w := test.MustRecord(t, r, http.MethodPost, "/users", tt.in)
-			if w == nil {
-				return
-			}
 			if !assert.Equal(t, http.StatusBadRequest, w.Code) {
 				return // unmarshalling will fail
 			}
 
 			var res map[string]interface{}
-			test.MustDecode(t, w, &res)
+			test.MustBind(t, w, &res)
 			assert.NotEmpty(t, res["error"])
 			assert.Regexp(t, tt.err, res["error"].(string))
 		}()
@@ -101,15 +94,12 @@ func TestGetUsers(t *testing.T) {
 	defer td()
 
 	w := test.MustRecord(t, r, http.MethodGet, "/users")
-	if w == nil {
-		return
-	}
 	if !assert.Equal(t, http.StatusOK, w.Code) {
 		return
 	}
 
 	var res []model.User
-	test.MustDecode(t, w, &res)
+	test.MustBind(t, w, &res)
 	assert.NotEmpty(t, res)
 
 	for _, u := range res {
@@ -133,19 +123,15 @@ func TestGetUser(t *testing.T) {
 
 	for _, tt := range tests {
 		w := test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/users/%d", tt.id))
-		if w == nil {
-			continue
-		}
 		if !assert.Equal(t, tt.code, w.Code) {
 			continue
 		}
-
 		if w.Code != http.StatusOK {
 			continue
 		}
 
 		var u model.User
-		test.MustDecode(t, w, &u)
+		test.MustBind(t, w, &u)
 		assert.NotEmpty(t, u)
 		assert.Equal(t, tt.id, u.ID)
 		assert.NotEmpty(t, u.Email)
@@ -168,9 +154,6 @@ func TestDeleteUser(t *testing.T) {
 
 	for _, tt := range tests {
 		w := test.MustRecord(t, r, http.MethodDelete, fmt.Sprintf("/users/%d", tt.id))
-		if w == nil {
-			continue
-		}
 		if !assert.Equal(t, tt.code, w.Code) {
 			continue
 		}
@@ -179,7 +162,7 @@ func TestDeleteUser(t *testing.T) {
 		}
 
 		var u model.User
-		test.MustDecode(t, w, &u)
+		test.MustBind(t, w, &u)
 		assert.NotEmpty(t, u)
 		assert.Equal(t, tt.id, u.ID)
 		assert.NotEmpty(t, u.Email)
@@ -210,9 +193,6 @@ func TestUpdateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		w := test.MustRecord(t, r, http.MethodPatch, fmt.Sprintf("/users/%d", tt.id), tt.user)
-		if w == nil {
-			continue
-		}
 		if !assert.Equal(t, tt.code, w.Code) {
 			continue
 		}
@@ -221,7 +201,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		var u model.User
-		test.MustDecode(t, w, &u)
+		test.MustBind(t, w, &u)
 		assert.NotEmpty(t, u)
 		assert.Equal(t, tt.id, u.ID)
 		assert.NotEmpty(t, u.Email)

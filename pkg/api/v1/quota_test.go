@@ -38,9 +38,6 @@ func TestGetQuotaForUser(t *testing.T) {
 
 	for _, tt := range tests {
 		w := test.MustRecord(t, r, http.MethodGet, fmt.Sprintf("/quotas/%d", tt.userID))
-		if w == nil {
-			continue
-		}
 		if !assert.Equal(t, w.Code, tt.code) {
 			continue
 		}
@@ -49,7 +46,7 @@ func TestGetQuotaForUser(t *testing.T) {
 		}
 
 		var res []model.Quota
-		test.MustDecode(t, w, &res)
+		test.MustBind(t, w, &res)
 
 		assert.Len(t, res, tt.len)
 		for _, q := range res {
@@ -98,11 +95,7 @@ func TestCreateQuota(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		// t.Logf("%#v\n", tt.in)
 		w := test.MustRecord(t, r, http.MethodPost, fmt.Sprintf("/quotas/%d", tt.userID), tt.in)
-		if w == nil {
-			continue
-		}
 		if !assert.Equal(t, tt.code, w.Code) {
 			continue
 		}
@@ -111,7 +104,7 @@ func TestCreateQuota(t *testing.T) {
 		}
 
 		var res model.Quota
-		test.MustDecode(t, w, &res)
+		test.MustBind(t, w, &res)
 		assert.NotZero(t, res.ID)
 		assert.Equal(t, tt.in.Type, res.Type)
 		assert.Equal(t, tt.in.Value, res.Value)
@@ -135,9 +128,6 @@ func TestDeleteQuota(t *testing.T) {
 
 	for _, tt := range tests {
 		w := test.MustRecord(t, r, http.MethodDelete, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id))
-		if w == nil {
-			continue
-		}
 		if !assert.Equal(t, tt.code, w.Code) {
 			continue
 		}
@@ -146,7 +136,7 @@ func TestDeleteQuota(t *testing.T) {
 		}
 
 		var q model.Quota
-		test.MustDecode(t, w, &q)
+		test.MustBind(t, w, &q)
 		assert.NotEmpty(t, q)
 		assert.Equal(t, tt.id, q.ID)
 		assert.Equal(t, tt.userID, q.UserID)
@@ -197,10 +187,6 @@ func TestUpdateQuota(t *testing.T) {
 	for _, tt := range tests {
 		in := gin.H{"value": tt.value}
 		w := test.MustRecord(t, r, http.MethodPatch, fmt.Sprintf("/quotas/%d/%d", tt.userID, tt.id), in)
-
-		if w == nil {
-			continue
-		}
 		if !assert.Equal(t, tt.code, w.Code) {
 			continue
 		}
@@ -209,7 +195,7 @@ func TestUpdateQuota(t *testing.T) {
 		}
 
 		var q model.Quota
-		test.MustDecode(t, w, &q)
+		test.MustBind(t, w, &q)
 		assert.NotEmpty(t, q)
 		assert.Equal(t, tt.id, q.ID)
 		assert.Equal(t, tt.userID, q.UserID)

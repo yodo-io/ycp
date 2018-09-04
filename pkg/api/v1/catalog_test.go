@@ -14,15 +14,12 @@ func TestGetCatalog(t *testing.T) {
 	defer td()
 
 	w := test.MustRecord(t, r, http.MethodGet, "/catalog")
-	if w == nil {
-		return
-	}
-	if !assert.Equal(t, http.StatusOK, w.Code) {
+	if assert.Equal(t, http.StatusOK, w.Code) {
 		return
 	}
 
 	var res []model.Catalog
-	test.MustDecode(t, w, &res)
+	test.MustBind(t, w, &res)
 	assert.NotEmpty(t, res)
 	for _, c := range res {
 		assert.NotEmpty(t, c.Name)

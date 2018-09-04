@@ -1,13 +1,47 @@
-package rbac
+/*
+Package rbac implements simple rule engine for RBAC based on a request path and action.
 
-// This package implements a simple rule based RBAC mechanism based on resource path and action.
-//
-// Rules are parsed as go templates against the claims for the token that was passed in with the
-// request, then matched as regex against the request path and method. If both match, the request
-// is granted, if either fails, it is denied.
-//
-// Only 2 levels of access are supported. Admins are allowed access to everything (i.e. rules are
-// not evaluated at all), users are only allowed to paths they are explicitly granted access to
+A set of rules is matched against the current request matching request path and method against
+allowed values defined by the rule. If any rule matches, the request is granted, if no rule matches,
+the request is denied.
+
+A rule consists of a request path and an action. The path is parsed as a go template against
+the claim found in the JWT token that was transmitted with the request. If no claim was found, access
+is denied.
+
+The parsed path template & action in the rule are matched as regular expressions against the request
+URLs path component and HTTP method respectively.
+
+	// JWT contained this claim
+	const claim := auth.Claim {
+		UserID: 1
+	}
+
+	// Path and action are matched as regex
+	// Additionally, path is parsed as template against claim
+	rule := &rule {
+		path: "/vd+/users/{{.UserID}}"
+		action: "GET|PATCH"
+	}
+
+	// The following requests would match:
+	// GET /v1/users/1
+	// PATCH /v1/users/1
+	// PATCH /v2/users/1
+
+	// These requests would not match:
+	// GET /v1/users/2
+	// DELETE /v1/users/1
+	// POST /v1/users
+
+
+Currently only two role-based access levels are supported. Users with RoleAdmin are always allowed access
+(i.e. no rules are evaluated), users with RoleUser need to have at least one matching rule.
+
+As of now, rules are harcoded in this package - however, the implementation would allow to easily serialize
+them in any structured document format (JSON, YAML) and keep them in a database or config file.
+*/
+package rbac
 
 import (
 	"errors"

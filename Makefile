@@ -4,6 +4,7 @@ test:
 	go test ./...
 
 bin/ycp:
+	dep ensure
 	go build -o bin/ycp
 
 run: bin/ycp

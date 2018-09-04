@@ -20,9 +20,9 @@ func mustInitMiddleware() *gin.Engine {
 func TestAuthMiddleware(t *testing.T) {
 	db := model.MustInitTestDB(true)
 	defer db.Close()
-	ac := newAuthz(db, secret)
 
-	tokenStr, err := ac.tokenFor(newRequest("joe@example.org", "secret"))
+	ac := NewController(db, secret)
+	tokenStr, err := ac.TokenFor("joe@example.org", "secret")
 	if err != nil {
 		t.Fatal(err)
 		return

@@ -7,6 +7,6 @@ import (
 
 // Handler returns the route handler for the auth module with given RouterGroup
 func Handler(db *gorm.DB, secret []byte) gin.HandlerFunc {
-	ac := newAuthz(db, secret)
+	ac := NewController(db, secret)
 	return ac.createToken
 }

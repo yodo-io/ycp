@@ -8,6 +8,7 @@ import (
 	"github.com/yodo-io/ycp/pkg/api"
 	"github.com/yodo-io/ycp/pkg/api/v1"
 	"github.com/yodo-io/ycp/pkg/api/v1/auth"
+	"github.com/yodo-io/ycp/pkg/api/v1/rbac"
 	"github.com/yodo-io/ycp/pkg/model"
 )
 
@@ -49,6 +50,7 @@ func setupGin(db *gorm.DB) (*gin.Engine, error) {
 
 	rg := g.Group("/v1")
 	rg.Use(auth.Middleware(secret))
+	rg.Use(rbac.Middleware())
 	v1.Routes(rg, db)
 
 	return g, nil

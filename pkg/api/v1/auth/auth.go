@@ -26,7 +26,8 @@ type tokenResponse struct {
 	Token string `json:"token" binding:"required"`
 }
 
-type authz struct {
+// Auth implements authentication for the API
+type Auth struct {
 	db     *gorm.DB
 	secret []byte
 }
@@ -34,19 +35,22 @@ type authz struct {
 // Claims contains claims attached to the auth token. They will be stored in the
 // gin.Context upon successful validation of the user provided token
 type Claims struct {
-	Role  model.Role `json:"role"`
-	Email string     `json:"email"`
+	Role   model.Role `json:"role"`
+	UserID uint       `json:"userID"`
+	Email  string     `json:"email"`
 	jwt.StandardClaims
 }
 
-func newAuthz(db *gorm.DB, secret []byte) *authz {
-	return &authz{db, secret}
+// NewController create a new auth controller
+func NewController(db *gorm.DB, secret []byte) *Auth {
+	return &Auth{db, secret}
 }
 
 func newResponse(tokenStr string) *tokenResponse {
 	return &tokenResponse{tokenStr}
 }
 
+// NewRequest generate a new tokenRequest
 func newRequest(email, password string) *tokenRequest {
 	return &tokenRequest{
 		Email:    email,
@@ -56,8 +60,9 @@ func newRequest(email, password string) *tokenRequest {
 
 func claimsFor(u *model.User) *Claims {
 	return &Claims{
-		Role:  u.Role,
-		Email: u.Email,
+		Role:   u.Role,
+		Email:  u.Email,
+		UserID: u.ID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(tokenLifetime).Unix(),
 			Issuer:    tokenIssuer,
@@ -65,8 +70,11 @@ func claimsFor(u *model.User) *Claims {
 	}
 }
 
-func (a *authz) tokenFor(tr *tokenRequest) (string, error) {
-	u, err := a.validateUser(tr.Email, tr.Password)
+// TokenFor generates a new token for given tokenRequest
+// Might be better to have this in a dedicated component (TokenProvider or sthg.) instead of making
+// the entire controller public.
+func (a *Auth) TokenFor(email, password string) (string, error) {
+	u, err := a.validateUser(email, password)
 	if err != nil {
 		return "", err
 	}
@@ -74,7 +82,7 @@ func (a *authz) tokenFor(tr *tokenRequest) (string, error) {
 	return token.SignedString(a.secret)
 }
 
-func (a *authz) validateUser(email string, pw string) (*model.User, error) {
+func (a *Auth) validateUser(email string, pw string) (*model.User, error) {
 	var u []*model.User
 	if err := a.db.Find(&u, "email = ?", email).Error; err != nil {
 		return nil, err
@@ -85,14 +93,14 @@ func (a *authz) validateUser(email string, pw string) (*model.User, error) {
 	return u[0], nil
 }
 
-func (a *authz) createToken(c *gin.Context) {
+func (a *Auth) createToken(c *gin.Context) {
 	var tr tokenRequest
 	if err := c.ShouldBind(&tr); err != nil {
 		c.JSON(http.StatusBadRequest, api.Error(err))
 		return
 	}
 
-	ts, err := a.tokenFor(&tr)
+	ts, err := a.TokenFor(tr.Email, tr.Password)
 	if err == errAuthFailed {
 		c.JSON(http.StatusBadRequest, api.Error(err))
 		return

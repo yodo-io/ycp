@@ -4,14 +4,20 @@ Your next best cloud provider.
 
 ## Prerequisites
 
-- Go and [dep](https://golang.github.io/dep/)
-- Make (optional)
+- Go 1.11
+- Make
 
 ## Usage
 
 - Run all tests: `make test`
 - Clean artifacts and build: `make clean build`
 - Start server with sample data: `make clean run`
+- Default address: `localhost:9000`
+
+## Docker
+
+- Docker build: `docker build -t ycp:latest .`
+- Run, with port forward: `docker run -it --rm -p 9000:9000 ycp:latest`
 
 ## API
 
